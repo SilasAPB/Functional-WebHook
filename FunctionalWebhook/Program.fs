@@ -24,17 +24,20 @@ let initDb () =
     cmd.CommandText <- """
         CREATE TABLE IF NOT EXISTS transactions (
             transaction_id TEXT PRIMARY KEY,
-            confirmed_at   TEXT NOT NULL
+            status         TEXT NOT NULL,
+            reason         TEXT,
+            created_at     TEXT NOT NULL
         )"""
     cmd.ExecuteNonQuery() |> ignore
-
-let saveTransaction (txId: string) =
+let saveTransaction (txId: string) (status: string) (reason: string option) =
     use conn = new SqliteConnection($"Data Source={dbPath}")
     conn.Open()
     let cmd = conn.CreateCommand()
-    cmd.CommandText <- "INSERT OR IGNORE INTO transactions (transaction_id, confirmed_at) VALUES ($id, $ts)"
-    cmd.Parameters.AddWithValue("$id", txId) |> ignore
-    cmd.Parameters.AddWithValue("$ts", DateTime.UtcNow.ToString("o")) |> ignore
+    cmd.CommandText <- "INSERT OR IGNORE INTO transactions (transaction_id, status, reason, created_at) VALUES ($id, $status, $reason, $ts)"
+    cmd.Parameters.AddWithValue("$id",     txId)                                |> ignore
+    cmd.Parameters.AddWithValue("$status", status)                              |> ignore
+    cmd.Parameters.AddWithValue("$reason", reason |> Option.map box |> Option.defaultValue (box DBNull.Value)) |> ignore
+    cmd.Parameters.AddWithValue("$ts",     DateTime.UtcNow.ToString("o"))       |> ignore
     cmd.ExecuteNonQuery() |> ignore
 
 let isConfirmed (txId: string) =
@@ -71,8 +74,12 @@ let postToGateway (endpoint: string) (txId: string) =
 
 let cancelTransaction  txId = postToGateway "cancelar"  txId
 let confirmTransaction txId =
-    saveTransaction txId
+    saveTransaction txId "confirmed" None
     postToGateway "confirmar" txId
+
+let rejectTransaction txId reason =
+    saveTransaction txId "rejected" (Some reason)
+    cancelTransaction txId
 
 // Funções puras de validação //
 
@@ -177,7 +184,7 @@ let handleWebhook (ctx: HttpContext) =
 
         match remainingValidations () with
         | Fail(code, reason) ->
-            cancelTransaction txId
+            rejectTransaction txId reason
             return! respond code {| status = "cancelled"; transaction_id = txId; reason = reason |}
         | Ok ->
 

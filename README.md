@@ -30,9 +30,16 @@ python test/test_webhook.py payment_success abc123456789 49.90 BRL 2023-10-01T12
 ```
 Isso simula um evento de pagamento bem-sucedido para a transação `abc123456789` no valor de `49.90 BRL` com um timestamp específico.
 
-## Token
+obs: se voce rodar o script de teste mais de uma vez com a mesma transação, ele vai retornar "cancelled" porque a transação já foi confirmada na primeira execução, para evitar isso, basta alterar o ID da transação no script de teste. E isso pode fazer um dos testes falharem, mas é esperado que isso aconteça.
 
+## Token
 Como é possivel observar na chamada do script de teste, o token é passado como argumento, e o webhook valida esse token para garantir que a requisição é legítima. O token esperado é definido na função `validateToken` dentro do `Program.fs` e seu valor default é `"meu-token-secreto"`. Você pode alterar esse valor tanto no script de teste quanto na função de validação para testar diferentes cenários de autenticação.
+
+## Uso de DB
+O webhook utiliza um banco de dados SQLite para armazenar o estado das transações, garantindo que as operações de confirmação e cancelamento sejam persistentes e consistentes. O arquivo do banco de dados é criado automaticamente na pasta do projeto e é gerenciado através da função `saveTransaction` no `Program.fs`. O arquivvo do banco de dados é nomeado como `transactions.db` e contém uma tabela chamada `Transactions` com as colunas `TransactionId`, `Status`, `Reason` e `CreatedAt`. O status pode ser "confirmed" ou "cancelled", permitindo que o webhook mantenha um registro preciso
+
+## Agradecimentos
+- Ao professor Fabio Ayres e todos os colegas de Programação Funcional!
 
 
 
