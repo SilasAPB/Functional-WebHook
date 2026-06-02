@@ -55,3 +55,12 @@ CodeCoverage/
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
+
+_hookenv/
+
+
+bin/
+obj/
+*.db
+*.db-shm
+*.db-wal
