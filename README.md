@@ -31,6 +31,11 @@ python test/test_webhook.py
 ```
 ### Personalizando o Script de Teste
 Você pode passar argumentos para o script de teste para simular diferentes eventos e transações. Por exemplo:
+
+```bash
+python test/test_webhook.py <event> <transaction_id> <amount> <currency> <timestamp> <token>
+```
+
 ```bash
 python test/test_webhook.py payment_success abc123456789 49.90 BRL 2023-10-01T12:00:00Z meu-token-secreto
 ```
