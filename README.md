@@ -20,6 +20,12 @@ obs: na pasta `FunctionalWebhook/` tem um arquivo `Program.fs` com o código do 
 dotnet run --project FunctionalWebhook
 ```
 ### Como Rodar o Script de Teste
+
+- Lembres-e de instalar as dependências do Python, como `requests`, usando:
+```bash
+pip install -r requirements.txt
+```
+
 ```bash
 python test/test_webhook.py
 ```
@@ -36,7 +42,16 @@ obs: se voce rodar o script de teste mais de uma vez com a mesma transação, el
 Como é possivel observar na chamada do script de teste, o token é passado como argumento, e o webhook valida esse token para garantir que a requisição é legítima. O token esperado é definido na função `validateToken` dentro do `Program.fs` e seu valor default é `"meu-token-secreto"`. Você pode alterar esse valor tanto no script de teste quanto na função de validação para testar diferentes cenários de autenticação.
 
 ## Uso de DB
-O webhook utiliza um banco de dados SQLite para armazenar o estado das transações, garantindo que as operações de confirmação e cancelamento sejam persistentes e consistentes. O arquivo do banco de dados é criado automaticamente na pasta do projeto e é gerenciado através da função `saveTransaction` no `Program.fs`. O arquivvo do banco de dados é nomeado como `transactions.db` e contém uma tabela chamada `Transactions` com as colunas `TransactionId`, `Status`, `Reason` e `CreatedAt`. O status pode ser "confirmed" ou "cancelled", permitindo que o webhook mantenha um registro preciso
+O webhook utiliza um banco de dados SQLite para armazenar o estado das transações, garantindo que as operações de confirmação e cancelamento sejam persistentes e consistentes. O arquivo do banco de dados é criado automaticamente na pasta do projeto e é gerenciado através da função `saveTransaction` no `Program.fs`. O arquivvo do banco de dados é nomeado como `transactions.db` e contém uma tabela chamada `Transactions` com as colunas `TransactionId`, `Status`, `Reason` e `CreatedAt`. O status pode ser "confirmed" ou "cancelled", permitindo que o webhook mantenha um registro preciso.
+
+## Funcionalidades Implementadas
+- Validação de token de autenticação (`X-Webhook-Token`)
+- Validação de integridade do payload (campos obrigatórios)
+- Verificação de veracidade da transação (amount e currency)
+- Cancelamento automático em caso de divergência
+- Confirmação automática em caso de sucesso
+- Persistência em banco de dados SQLite
+- Servidor HTTPS na porta 5443
 
 ## Agradecimentos
 - Ao professor Fabio Ayres e todos os colegas de Programação Funcional!
